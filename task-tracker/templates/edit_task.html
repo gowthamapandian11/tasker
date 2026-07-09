@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}Edit Task — Task Tracker{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+  <!-- ─── Page Header ──────────────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="header-row">
+      <div>
+        <h1>Edit Task</h1>
+        <p>Update the details of the selected task.</p>
+      </div>
+      <a href="{{ url_for('tasks.task_list') }}" class="btn btn-outline"
+         id="btn-back-from-edit">← Back to Tasks</a>
+    </div>
+  </div>
+
+  <!-- ─── Edit Form ────────────────────────────────────────────────── -->
+  <div class="card">
+    <form method="POST"
+          action="{{ url_for('tasks.edit_task', task_id=task._id) }}"
+          id="form-edit-task">
+
+      <div class="form-grid">
+
+        <!-- Task Title -->
+        <div class="form-group">
+          <label for="edit-title">Task Title <span style="color:var(--red)">*</span></label>
+          <input
+            type="text"
+            name="title"
+            id="edit-title"
+            class="form-control"
+            value="{{ task.title }}"
+            required
+            maxlength="120"
+          />
+        </div>
+
+        <!-- Assigned Member -->
+        <div class="form-group">
+          <label for="edit-member">Assigned Member <span style="color:var(--red)">*</span></label>
+          <select name="member_id" id="edit-member" class="form-control" required>
+            <option value="">— Select a member —</option>
+            {% for member in members %}
+              <option value="{{ member._id }}"
+                {% if task.member_id == member._id | string or task.member_name == member.name %}
+                  selected
+                {% endif %}>
+                {{ member.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Task Date -->
+        <div class="form-group">
+          <label for="edit-date">Task Date</label>
+          <input
+            type="date"
+            name="date"
+            id="edit-date"
+            class="form-control"
+            value="{{ task.date }}"
+          />
+        </div>
+
+        <!-- Priority -->
+        <div class="form-group">
+          <label for="edit-priority">Priority</label>
+          <select name="priority" id="edit-priority" class="form-control">
+            {% for p in priorities %}
+              <option value="{{ p }}" {% if task.priority == p %}selected{% endif %}>
+                {{ p }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Status -->
+        <div class="form-group">
+          <label for="edit-status">Status</label>
+          <select name="status" id="edit-status" class="form-control">
+            {% for s in statuses %}
+              <option value="{{ s }}" {% if task.status == s %}selected{% endif %}>
+                {{ s }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Description -->
+        <div class="form-group full-width">
+          <label for="edit-description">Description</label>
+          <textarea
+            name="description"
+            id="edit-description"
+            class="form-control"
+            rows="4"
+          >{{ task.description }}</textarea>
+        </div>
+
+      </div><!-- /.form-grid -->
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" id="btn-save-task">
+          Save Changes
+        </button>
+        <a href="{{ url_for('tasks.task_list') }}" class="btn btn-outline"
+           id="btn-cancel-edit">Cancel</a>
+
+        <!-- Delete from edit page -->
+        <form method="POST"
+              action="{{ url_for('tasks.delete_task', task_id=task._id) }}"
+              data-confirm="Delete task '{{ task.title }}'? This cannot be undone."
+              id="form-delete-from-edit"
+              style="margin-left: auto;">
+          <button type="submit" class="btn btn-danger" id="btn-delete-from-edit">
+            Delete Task
+          </button>
+        </form>
+      </div>
+
+    </form>
+  </div><!-- /.card -->
+
+  <!-- ─── Task Meta Info ────────────────────────────────────────────── -->
+  <div class="card" style="padding: 1rem 2rem;">
+    <small style="color: var(--gray-mid); font-size: 0.78rem;">
+      Created:
+      {{ task.created_at.strftime('%B %d, %Y at %H:%M') if task.created_at else '—' }}
+      &nbsp;·&nbsp;
+      Last updated:
+      {{ task.updated_at.strftime('%B %d, %Y at %H:%M') if task.updated_at else '—' }}
+    </small>
+  </div>
+
+</div><!-- /.page-container -->
+{% endblock %}

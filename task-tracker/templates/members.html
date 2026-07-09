@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Team Members — Task Tracker{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+  <!-- ─── Page Header ──────────────────────────────────────────────── -->
+  <div class="page-header">
+    <h1>Team Members</h1>
+    <p>Add and manage team members. Members can be assigned to tasks.</p>
+  </div>
+
+  <!-- ─── Add Member Card ──────────────────────────────────────────── -->
+  <div class="card">
+    <div class="card-title">Add New Member</div>
+
+    <form method="POST" action="{{ url_for('members.add_member') }}"
+          id="form-add-member" class="inline-form">
+      <input
+        type="text"
+        name="name"
+        id="input-member-name"
+        class="form-control"
+        placeholder="Enter member name…"
+        required
+        maxlength="80"
+        autocomplete="off"
+      />
+      <button type="submit" class="btn btn-primary" id="btn-submit-member">
+        + Add Member
+      </button>
+    </form>
+  </div>
+
+  <!-- ─── Members Grid ─────────────────────────────────────────────── -->
+  <div class="card">
+    <div class="card-title">All Members
+      <span style="font-weight:400; color: var(--gray-mid); font-size: 0.85rem; margin-left: 4px;">
+        ({{ members | length }})
+      </span>
+    </div>
+
+    {% if members %}
+      <div class="members-grid">
+        {% for member in members %}
+        <div class="member-card" id="member-{{ member._id }}">
+
+          <!-- Avatar (first letter of name) -->
+          <div class="member-avatar" aria-hidden="true">
+            {{ member.name[0] | upper }}
+          </div>
+
+          <!-- Info -->
+          <div class="member-info">
+            <div class="member-name">{{ member.name }}</div>
+            <div class="member-meta">
+              Joined {{ member.created_at.strftime('%b %d, %Y') if member.created_at else '—' }}
+            </div>
+          </div>
+
+          <!-- Delete -->
+          <form method="POST"
+                action="{{ url_for('members.delete_member', member_id=member._id) }}"
+                data-confirm="Remove member '{{ member.name }}'? Their tasks will remain."
+                id="form-delete-member-{{ member._id }}">
+            <button type="submit" class="btn btn-danger btn-sm"
+                    title="Remove member" aria-label="Remove {{ member.name }}">
+              ✕
+            </button>
+          </form>
+
+        </div>
+        {% endfor %}
+      </div>
+
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">👥</div>
+        <p>No team members yet. Add your first member above.</p>
+      </div>
+    {% endif %}
+  </div>
+
+</div><!-- /.page-container -->
+{% endblock %}

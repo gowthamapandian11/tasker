@@ -1,0 +1,49 @@
+========== Docker Compose Deployment ==========
+Start Time : 2026-07-09 04:37:18.072574
+
+Stopping old containers...
+
+>>> docker compose -f docker-compose.yml down
+Container flask-app Stopping 
+ Container logger Stopping 
+ Container logger Stopped 
+ Container logger Removing 
+ Container logger Removed 
+ Container flask-app Stopped 
+ Container flask-app Removing 
+ Container flask-app Removed 
+ Container mongodb Stopping 
+ Container mongodb Stopped 
+ Container mongodb Removing 
+ Container mongodb Removed 
+ Network dockercompose_flask-mongo-net Removing 
+ Network dockercompose_flask-mongo-net Removed
+Command Success
+Starting containers...
+
+>>> docker compose -f docker-compose.yml up -d
+Network dockercompose_flask-mongo-net Creating 
+ Network dockercompose_flask-mongo-net Created 
+ Container mongodb Creating 
+ Container logger Creating 
+ Container logger Created 
+ Container mongodb Created 
+ Container flask-app Creating 
+ Container flask-app Created 
+ Container mongodb Starting 
+ Container logger Starting 
+ Container logger Started 
+ Container mongodb Started 
+ Container flask-app Starting 
+ Container flask-app Started
+Command Success
+Container Status...
+
+>>> docker compose -f docker-compose.yml ps
+NAME        IMAGE                          COMMAND                  SERVICE          CREATED         STATUS                  PORTS
+flask-app   dockercompose-flask-app        "python app.py"          flask-app        2 seconds ago   Up Less than a second   0.0.0.0:5000->5000/tcp, [::]:5000->5000/tcp
+logger      dockercompose-logger-service   "python app.py"          logger-service   2 seconds ago   Up 1 second             0.0.0.0:5001->5001/tcp, [::]:5001->5001/tcp
+mongodb     mongo:4.4                      "docker-entrypoint.s…"   mongodb          2 seconds ago   Up 1 second             0.0.0.0:27017->27017/tcp, [::]:27017->27017/tcp
+Command Success
+
+Deployment Completed : 2026-07-09 04:37:22.065177

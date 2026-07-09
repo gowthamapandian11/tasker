@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Add Task — Task Tracker{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+  <!-- ─── Page Header ──────────────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="header-row">
+      <div>
+        <h1>Add New Task</h1>
+        <p>Fill in the details below to create a new task for your team.</p>
+      </div>
+      <a href="{{ url_for('tasks.task_list') }}" class="btn btn-outline"
+         id="btn-back-to-tasks">← Back to Tasks</a>
+    </div>
+  </div>
+
+  <!-- ─── Task Form ────────────────────────────────────────────────── -->
+  <div class="card">
+
+    {% if members %}
+      <form method="POST" action="{{ url_for('tasks.add_task') }}" id="form-add-task">
+        <div class="form-grid">
+
+          <!-- Task Title -->
+          <div class="form-group">
+            <label for="input-title">Task Title <span style="color:var(--red)">*</span></label>
+            <input
+              type="text"
+              name="title"
+              id="input-title"
+              class="form-control"
+              placeholder="e.g. Design login page"
+              required
+              maxlength="120"
+              autocomplete="off"
+            />
+          </div>
+
+          <!-- Assigned Member -->
+          <div class="form-group">
+            <label for="input-member">Assigned Member <span style="color:var(--red)">*</span></label>
+            <select name="member_id" id="input-member" class="form-control" required>
+              <option value="">— Select a member —</option>
+              {% for member in members %}
+                <option value="{{ member._id }}">{{ member.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Task Date -->
+          <div class="form-group">
+            <label for="input-date">Task Date</label>
+            <input
+              type="date"
+              name="date"
+              id="input-date"
+              class="form-control"
+              value="{{ today }}"
+            />
+          </div>
+
+          <!-- Priority -->
+          <div class="form-group">
+            <label for="input-priority">Priority</label>
+            <select name="priority" id="input-priority" class="form-control">
+              {% for p in priorities %}
+                <option value="{{ p }}" {% if p == 'Medium' %}selected{% endif %}>{{ p }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Status -->
+          <div class="form-group">
+            <label for="input-status">Status</label>
+            <select name="status" id="input-status" class="form-control">
+              {% for s in statuses %}
+                <option value="{{ s }}" {% if s == 'Planned' %}selected{% endif %}>{{ s }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Description (full width) -->
+          <div class="form-group full-width">
+            <label for="input-description">Description</label>
+            <textarea
+              name="description"
+              id="input-description"
+              class="form-control"
+              placeholder="Describe the task in detail…"
+              rows="4"
+            ></textarea>
+          </div>
+
+        </div><!-- /.form-grid -->
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" id="btn-create-task">
+            Create Task
+          </button>
+          <a href="{{ url_for('tasks.task_list') }}" class="btn btn-outline"
+             id="btn-cancel-add">Cancel</a>
+        </div>
+
+      </form>
+
+    {% else %}
+      <!-- No members yet — prompt to add one first -->
+      <div class="empty-state">
+        <div class="empty-icon">👥</div>
+        <p>You need to add at least one team member before creating a task.</p>
+        <a href="{{ url_for('members.members_list') }}" class="btn btn-primary"
+           id="btn-go-add-member">Go to Members</a>
+      </div>
+    {% endif %}
+
+  </div><!-- /.card -->
+</div><!-- /.page-container -->
+{% endblock %}

@@ -1,0 +1,43 @@
+services:
+  mongodb:
+    image: mongo:4.4
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - flask-mongo-net
+
+  logger-service:
+    build:
+      context: ../logger-service
+      dockerfile: Dockerfile
+    container_name: logger
+    ports:
+      - "5001:5001"
+    volumes:
+      - logger-data:/app/logs
+    networks:
+      - flask-mongo-net
+
+  flask-app:
+    build:
+      context: ../task-tracker
+      dockerfile: Dockerfile
+    container_name: flask-app
+    depends_on:
+      - mongodb
+    ports:
+      - "5000:5000"
+    env_file:
+      - ../task-tracker/.env
+    networks:
+      - flask-mongo-net
+
+volumes:
+  mongo-data:
+  logger-data:
+
+networks:
+  flask-mongo-net:

@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block title %}Monthly Report — Task Tracker{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+  <!-- ─── Page Header ──────────────────────────────────────────────── -->
+  <div class="page-header">
+    <h1>Monthly Report</h1>
+    <p>
+      Individual task summary and breakdown for
+      <strong>{{ month_label }} {{ selected_year }}</strong>.
+    </p>
+  </div>
+
+  <!-- ─── Month / Year Selector ────────────────────────────────────── -->
+  <form method="GET" action="{{ url_for('tasks.monthly_report') }}" id="report-filter-form">
+    <div class="month-selector">
+      <div class="filter-group">
+        <label for="report-month">Month</label>
+        <select name="month" id="report-month" class="form-control" onchange="this.form.submit()">
+          {% for num, name in months %}
+            <option value="{{ num }}" {% if selected_month == num %}selected{% endif %}>
+              {{ name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="report-year">Year</label>
+        <select name="year" id="report-year" class="form-control" onchange="this.form.submit()">
+          {% for year in years %}
+            <option value="{{ year }}" {% if selected_year == year %}selected{% endif %}>
+              {{ year }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="filter-group" style="justify-content:flex-end;">
+        <label>&nbsp;</label>
+        <button type="submit" class="btn btn-dark" id="btn-view-report">View Report</button>
+      </div>
+    </div>
+  </form>
+
+  <!-- ─── Summary Table ────────────────────────────────────────────── -->
+  <div class="card">
+    <div class="card-title">Team Summary — {{ month_label }} {{ selected_year }}</div>
+
+    <div class="table-wrapper">
+      <table class="report-summary-table" aria-label="Monthly summary table">
+        <thead>
+          <tr>
+            <th>Member</th>
+            <th>Total</th>
+            <th>Completed</th>
+            <th>In Progress</th>
+            <th>Planned</th>
+            <th>Blocked</th>
+            <th style="min-width: 160px;">Completion</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in report %}
+          <tr>
+            <td>
+              <div class="member-chip">
+                <div class="member-avatar" style="width:30px;height:30px;font-size:0.8rem;">
+                  {{ row.member_name[0] | upper }}
+                </div>
+                <strong style="color: var(--dark);">{{ row.member_name }}</strong>
+              </div>
+            </td>
+            <td style="color: var(--dark); font-weight: 700;">{{ row.total }}</td>
+            <td><span class="badge badge-completed">{{ row.completed }}</span></td>
+            <td><span class="badge badge-in-progress">{{ row.in_progress }}</span></td>
+            <td><span class="badge badge-planned">{{ row.planned }}</span></td>
+            <td><span class="badge badge-blocked">{{ row.blocked }}</span></td>
+            <td>
+              <div class="completion-bar">
+                <div class="bar-track">
+                  <div class="bar-fill" style="width: {{ row.percentage }}%;"></div>
+                </div>
+                <span class="bar-label">{{ row.percentage }}%</span>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="7" style="text-align:center; color: var(--gray-mid); padding: 2rem;">
+              No data for {{ month_label }} {{ selected_year }}.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div><!-- /.card -->
+
+  <!-- ─── Per-Member Detail Sections ───────────────────────────────── -->
+  {% for row in report %}
+    {% if row.tasks %}
+    <div class="card report-member-section" id="report-member-{{ loop.index }}">
+      <div class="report-member-header">
+        <div class="member-avatar">{{ row.member_name[0] | upper }}</div>
+        <div>
+          <h3>{{ row.member_name }}</h3>
+          <small style="color:var(--gray-mid);">
+            {{ row.total }} task{{ 's' if row.total != 1 }} · {{ row.percentage }}% complete
+          </small>
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <table aria-label="{{ row.member_name }} task detail table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Task Title</th>
+              <th>Description</th>
+              <th>Priority</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for task in row.tasks %}
+            <tr>
+              <td>{{ task.date }}</td>
+              <td class="task-title-cell">{{ task.title }}</td>
+              <td style="max-width:240px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color: var(--gray-mid);">
+                {{ task.description or '—' }}
+              </td>
+              <td>
+                <span class="badge badge-{{ task.priority | lower }}">
+                  {{ task.priority }}
+                </span>
+              </td>
+              <td>
+                <span class="badge badge-{{ task.status | lower | replace(' ', '-') }}">
+                  {{ task.status }}
+                </span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div><!-- /.card -->
+    {% endif %}
+  {% endfor %}
+
+  <!-- Empty state if all members have no tasks this month -->
+  {% if report | selectattr('tasks') | list | length == 0 %}
+    <div class="card">
+      <div class="empty-state">
+        <div class="empty-icon">📅</div>
+        <p>No tasks found for {{ month_label }} {{ selected_year }}.</p>
+        <a href="{{ url_for('tasks.add_task') }}" class="btn btn-primary"
+           id="btn-add-from-report">Add Tasks</a>
+      </div>
+    </div>
+  {% endif %}
+
+</div><!-- /.page-container -->
+{% endblock %}

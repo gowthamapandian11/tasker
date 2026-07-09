@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Team Task Tracker{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+  <!-- ─── Page Header ──────────────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="header-row">
+      <div>
+        <h1>Dashboard</h1>
+        <p>Overview of all team tasks and their current status.</p>
+      </div>
+      <a href="{{ url_for('tasks.add_task') }}" class="btn btn-primary" id="btn-add-task-dashboard">
+        + New Task
+      </a>
+    </div>
+  </div>
+
+  <!-- ─── Stat Cards ───────────────────────────────────────────────── -->
+  <div class="stats-grid" role="region" aria-label="Task statistics">
+
+    <div class="stat-card total">
+      <div class="stat-label">Total Tasks</div>
+      <div class="stat-value" data-target="{{ stats.total }}">{{ stats.total }}</div>
+    </div>
+
+    <div class="stat-card completed">
+      <div class="stat-label">Completed</div>
+      <div class="stat-value" data-target="{{ stats.completed }}">{{ stats.completed }}</div>
+    </div>
+
+    <div class="stat-card in-progress">
+      <div class="stat-label">In Progress</div>
+      <div class="stat-value" data-target="{{ stats.in_progress }}">{{ stats.in_progress }}</div>
+    </div>
+
+    <div class="stat-card planned">
+      <div class="stat-label">Planned</div>
+      <div class="stat-value" data-target="{{ stats.planned }}">{{ stats.planned }}</div>
+    </div>
+
+    <div class="stat-card blocked">
+      <div class="stat-label">Blocked</div>
+      <div class="stat-value" data-target="{{ stats.blocked }}">{{ stats.blocked }}</div>
+    </div>
+
+  </div>
+
+  <!-- ─── Filters ──────────────────────────────────────────────────── -->
+  <div class="card">
+    <div class="card-title">Filter Tasks</div>
+
+    <form method="GET" action="{{ url_for('members.dashboard') }}" id="filter-form">
+      <div class="filter-bar">
+
+        <div class="filter-group">
+          <label for="filter-member">Member</label>
+          <select name="member" id="filter-member" class="form-control"
+                  onchange="this.form.submit()">
+            <option value="">All Members</option>
+            {% for member in members %}
+              <option value="{{ member.name }}"
+                {% if filter_member == member.name %}selected{% endif %}>
+                {{ member.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="filter-status">Status</label>
+          <select name="status" id="filter-status" class="form-control"
+                  onchange="this.form.submit()">
+            <option value="">All Statuses</option>
+            {% for s in ["Planned", "In Progress", "Completed", "Blocked"] %}
+              <option value="{{ s }}" {% if filter_status == s %}selected{% endif %}>
+                {{ s }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="filter-date">Date</label>
+          <input type="date" name="date" id="filter-date" class="form-control"
+                 value="{{ filter_date }}" onchange="this.form.submit()" />
+        </div>
+
+        {% if filter_member or filter_status or filter_date %}
+          <div class="filter-group" style="justify-content: flex-end;">
+            <label>&nbsp;</label>
+            <a href="{{ url_for('members.dashboard') }}" class="btn btn-outline"
+               id="btn-clear-filters">Clear Filters</a>
+          </div>
+        {% endif %}
+
+      </div>
+    </form>
+
+    <!-- ─── Task Table ────────────────────────────────────────────── -->
+    {% if tasks %}
+      <div class="table-wrapper">
+        <table aria-label="Task list table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Title</th>
+              <th>Member</th>
+              <th>Date</th>
+              <th>Priority</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for task in tasks %}
+            <tr>
+              <td><span class="row-idx">{{ loop.index }}</span></td>
+              <td class="task-title-cell">{{ task.title }}</td>
+              <td>
+                <div class="member-chip">
+                  <div class="member-avatar" style="width:26px;height:26px;font-size:0.7rem;">
+                    {{ task.member_name[0] | upper if task.member_name else '?' }}
+                  </div>
+                  {{ task.member_name }}
+                </div>
+              </td>
+              <td>{{ task.date }}</td>
+              <td>
+                <span class="badge badge-{{ task.priority | lower }}">
+                  {{ task.priority }}
+                </span>
+              </td>
+              <td>
+                <span class="badge badge-{{ task.status | lower | replace(' ', '-') }}">
+                  {{ task.status }}
+                </span>
+              </td>
+              <td>
+                <div class="action-group">
+                  <a href="{{ url_for('tasks.edit_task', task_id=task._id) }}"
+                     class="btn btn-outline btn-sm"
+                     id="btn-edit-{{ task._id }}">Edit</a>
+
+                  <form method="POST"
+                        action="{{ url_for('tasks.delete_task', task_id=task._id) }}"
+                        data-confirm="Delete task '{{ task.title }}'? This cannot be undone."
+                        id="form-delete-{{ task._id }}">
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <p>No tasks found{% if filter_member or filter_status or filter_date %} matching the current filters{% endif %}.</p>
+        <a href="{{ url_for('tasks.add_task') }}" class="btn btn-primary"
+           id="btn-add-first-task">Add Your First Task</a>
+      </div>
+    {% endif %}
+
+  </div><!-- /.card -->
+</div><!-- /.page-container -->
+{% endblock %}
